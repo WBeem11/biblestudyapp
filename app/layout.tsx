@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { EB_Garamond, Gentium_Plus, Inter, Noto_Serif_Hebrew } from "next/font/google";
 import "./globals.css";
@@ -38,7 +39,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${scripture.variable} ${ui.variable} ${hebrew.variable} ${greek.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+        {/* Cookieless page-view analytics; no study content involved. Inactive in development. */}
+        <Analytics />
+      </body>
     </html>
   );
 }
