@@ -1,0 +1,41 @@
+/*
+ * Minimalist Sacred UI: design tokens.
+ * Light palette on :root; dark palette overrides only the role tokens.
+ */
+:root {
+  --linen: #f5f1ea;
+  --parchment: #ede6da;
+  --stone-100: #e4ddd1;
+  --stone-300: #cfc7ba;
+  --stone-500: #8c8476;
+  --stone-600: #6b6458; /* muted text: 5.2:1 on linen, 4.7:1 on parchment (WCAG AA) */
+  --stone-700: #5a544b;
+  --ink: #2a2723;
+  --gilt: #a88b52; /* graphics only: 2.9:1 on linen is too light for text */
+  --bronze: #7f6129; /* accent text: 5.1:1 on linen, 4.65:1 on parchment */
+
+  /* Roles */
+  --ground: var(--linen);
+  --surface: var(--parchment);
+  --rule: var(--stone-300);
+  --text: var(--ink);
+  --text-muted: var(--stone-600);
+  --accent: var(--bronze);
+  --accent-graphic: var(--gilt);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #1d1b18;
+    --surface: #26231f;
+    --rule: #3d3832;
+    --text: #e9e3d8;
+    --text-muted: #9a9284;
+    --accent: #c4a66b;
+    --accent-graphic: #c4a66b;
+
+    color-scheme: dark;
+  }
+}
