@@ -7,6 +7,7 @@ const PAGES = [
   "/read/john/3?v=16",
   "/read/genesis/1?i=1&l=H1254A",
   "/read/john/3?i=1",
+  "/read/john/3?th=1",
   "/iconograph",
   "/search?q=shepherd",
   "/about",

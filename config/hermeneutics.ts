@@ -80,6 +80,7 @@ const config = {
       /^\/api\/lemmas\/[HG]\d{4}[A-Za-z]?\/occurrences$/, // words + verse_texts
       /^\/api\/search$/, // verse_fts
       /^\/api\/shared-lemmas$/, // words + lemmas
+      /^\/api\/threads\/\d+\/\d+$/, // cross_refs + verses
     ],
     externalFetch: false,
   },

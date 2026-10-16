@@ -7,6 +7,7 @@ summaries, advice or commentary. All study content comes from verified, local da
 - **Parallel Reader**: BSB and KJV side by side, verse-aligned, with cross-references for every verse.
 - **Iconograph**: all 344,794 OpenBible.info cross-references drawn as arcs across the canon (D3 + Canvas).
 - **Inline Concordance**: Hebrew and Greek word by word (STEPBible), with plain-English parsing and every occurrence.
+- **Threads**: read a whole chapter with every verse's cross-references drawn beside it, hover to read them and click to pin them under the verse, without leaving the chapter.
 - **Search**: full-text search with reference parsing (`⌘K`, then "Rom 8:28" or "loving devotion").
 
 ## Develop
@@ -22,7 +23,7 @@ npm run dev
 | `npm run data:fetch` | Download the sources pinned in `scripts/data-manifest.ts` into `data/raw/`, verifying each checksum |
 | `npm run db:build` | Build `data/bible.db` (SQLite, read-only at runtime) from `data/raw/` |
 | `npm test` | Unit and data-validation tests (Vitest) |
-| `npm run test:e2e` | Playwright flows plus axe accessibility scans (run `npm run build` first) |
+| `npm run test:e2e` | Playwright flows plus axe accessibility scans (run `npm run build` first; `E2E_PORT=3100` if :3000 is busy) |
 | `npm run lint` / `npm run typecheck` | ESLint, including the hermeneutics guardrail rules / TypeScript |
 
 ## Deploy (Vercel)

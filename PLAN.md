@@ -373,3 +373,16 @@ To add confessions or curated modules (Desiring God / TGC citations), add the ta
 - **Lighthouse** (simulated slow 4G, production build): Accessibility, Best Practices and SEO are 100 on every audited page; Performance is 90–98 (`/` 96, `/read/john/3?i=1` 98, `/iconograph` 98, `/read/genesis/1?i=1` 98, `/search` 92).
 - **Tests:** 58 unit and data tests. 47 Playwright tests across desktop and mobile: reader, keyboard, redirects/404, ⌘K, search, Iconograph, concordance, and axe (WCAG 2.1 AA) on 8 pages in light and dark mode. All passed across repeated runs.
 - **Not done yet:** a git repository and the first Vercel deploy. Both need the owner's GitHub/Vercel accounts.
+
+### Threads view (2026-10-15)
+
+- **What it does:** a "Threads" toggle in the reader (`?th=1`) draws each verse's cross-references as ticks along its own Genesis→Revelation rail.
+  - On wide screens (xl, with no side panel open) the rail sits in a column beside the text. Otherwise it's a full-width row under the verse.
+  - Tick height reflects votes. A shaded band marks the current chapter, with book bands below.
+  - Ticks are gold when three or more verses of the chapter reach the same target chapter.
+- **Reading in place:**
+  - Hovering a tick shows the passage's text, its votes and how many verses of this chapter reach that passage, and lights up the matching ticks in every other verse's rail.
+  - Clicking (or tapping on a phone) pins the passage under the verse, so you can read it without leaving the chapter; any number of pins, each with unpin and an open link.
+- **Accessibility:** each rail is `role="img"` with a summary (count and three strongest references), and its count button opens the full cross-reference list for that verse.
+- **Data:** `/api/threads/[book]/[chapter]` returns every positive-vote reference from the chapter in one payload: at most 2,074 per chapter, 96 per verse. Zero- or negative-vote references, which OpenBible voters dispute, are left out of the rails but stay in the per-verse sheet. Allow-listed in `config/hermeneutics.ts`.
+- **Tests:** unit coverage for the query and the `th` parameter. Playwright covers toggle, hover, pin and unpin while staying on the chapter, and the accessible list. axe runs on `/read/john/3?th=1` in light and dark mode at desktop and phone widths. `E2E_PORT` lets the suite run beside a dev server on :3000.

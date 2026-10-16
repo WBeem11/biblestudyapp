@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const CI = !!process.env.CI;
+// E2E_PORT lets the suite run beside a dev server already using :3000.
+const PORT = Number(process.env.E2E_PORT ?? 3000);
 
 export default defineConfig({
   testDir: "e2e",
@@ -8,7 +10,7 @@ export default defineConfig({
   retries: CI ? 1 : 0,
   reporter: CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: `http://localhost:${PORT}`,
     // Locally use the installed Chrome; CI installs Playwright's Chromium.
     channel: CI ? undefined : "chrome",
     trace: "retain-on-failure",
@@ -18,8 +20,8 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Pixel 7"] }, grep: /@mobile/ },
   ],
   webServer: {
-    command: "npm run start",
-    url: "http://localhost:3000",
+    command: `npm run start -- --port ${PORT}`,
+    url: `http://localhost:${PORT}`,
     reuseExistingServer: !CI,
     timeout: 60_000,
   },

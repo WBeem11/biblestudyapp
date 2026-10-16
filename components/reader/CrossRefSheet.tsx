@@ -24,10 +24,11 @@ interface Props {
   translation: TranslationId; // preview text shown in the primary translation
   translations: TranslationId[]; // preserved on links
   interlinear?: boolean; // preserved on links
+  threads?: boolean; // preserved on links
   onClose: () => void;
 }
 
-export function CrossRefSheet({ verseId, label, translation, translations, interlinear, onClose }: Props) {
+export function CrossRefSheet({ verseId, label, translation, translations, interlinear, threads, onClose }: Props) {
   const key = `${verseId}:${translation}`;
   const [loaded, setLoaded] = useState<{ key: string; data: Data } | { key: string; error: true } | null>(null);
   const [showAll, setShowAll] = useState(false);
@@ -91,7 +92,7 @@ export function CrossRefSheet({ verseId, label, translation, translations, inter
             {refs.map((r) => {
               const to = decodeVerseId(r.toStart);
               const book = bookById(to.book)!;
-              const href = `/read/${book.slug}/${to.chapter}${readerQuery({ translations, verse: to.verse, interlinear })}`;
+              const href = `/read/${book.slug}/${to.chapter}${readerQuery({ translations, verse: to.verse, interlinear, threads })}`;
               return (
                 <li key={`${r.toStart}-${r.toEnd}`}>
                   <Link href={href} className="group block py-4">

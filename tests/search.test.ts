@@ -45,3 +45,27 @@ describe.skipIf(!fs.existsSync(DB))("verse search", async () => {
     expect(() => searchVerses(q('love" OR verse_id:1 --'), "BSB", 0, 5)).not.toThrow();
   });
 });
+
+describe.skipIf(!fs.existsSync(DB))("chapter threads", async () => {
+  const { getChapterThreads } = await import("@/lib/queries/threads");
+  const { assertAllowedApiPath } = await import("@/config/hermeneutics");
+
+  it("returns every positive-vote reference from the chapter, strongest first per verse", () => {
+    const { refs, self } = getChapterThreads(43, 3); // John 3
+    expect(refs.length).toBeGreaterThan(200);
+    expect(refs.every(([v, , , votes]) => v >= 1 && v <= 36 && votes > 0)).toBe(true);
+    const v16 = refs.filter(([v]) => v === 16);
+    expect(v16.length).toBeGreaterThan(10);
+    expect(v16[0][3]).toBeGreaterThanOrEqual(v16.at(-1)![3]);
+    expect(v16.some(([, s]) => s === 45005008)).toBe(true); // Romans 5:8
+    expect(self[1] - self[0]).toBe(35); // 36 verses
+    expect(refs.every(([, , , , o]) => o >= 1 && o <= 31102)).toBe(true);
+    const { bookStarts } = getChapterThreads(1, 1);
+    expect(bookStarts).toHaveLength(66);
+    expect(bookStarts[0]).toBe(1);
+  });
+
+  it("allows the threads API path", () => {
+    expect(() => assertAllowedApiPath("/api/threads/43/3")).not.toThrow();
+  });
+});

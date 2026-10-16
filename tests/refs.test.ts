@@ -116,13 +116,14 @@ describe("reader url state", async () => {
   const q = (s: string) => new URLSearchParams(s);
 
   it("parses and validates params", () => {
-    const none = { interlinear: false, lemma: null };
+    const none = { interlinear: false, lemma: null, threads: false };
     expect(parseReaderState(q(""), 36)).toEqual({ translations: DEFAULT_TRANSLATIONS, verse: null, ...none });
     expect(parseReaderState(q("t=kjv&v=16"), 36)).toEqual({ translations: ["KJV"], verse: 16, ...none });
     expect(parseReaderState(q("t=KJV,BSB,KJV,XYZ"), 36).translations).toEqual(["KJV", "BSB"]);
     expect(parseReaderState(q("t=XYZ&v=99"), 36)).toEqual({ translations: DEFAULT_TRANSLATIONS, verse: null, ...none });
     expect(parseReaderState(q("i=1&l=G0026"), 36)).toMatchObject({ interlinear: true, lemma: "G0026" });
     expect(parseReaderState(q("l=DROP TABLE"), 36).lemma).toBeNull();
+    expect(parseReaderState(q("th=1"), 36).threads).toBe(true);
   });
 
   it("omits defaults when serializing", () => {
@@ -130,6 +131,7 @@ describe("reader url state", async () => {
     expect(readerQuery({ translations: ["KJV"], verse: 16 })).toBe("?t=KJV&v=16");
     expect(readerQuery({ verse: 3 })).toBe("?v=3");
     expect(readerQuery({ verse: 3, interlinear: true, lemma: "H7225G" })).toBe("?v=3&i=1&l=H7225G");
+    expect(readerQuery({ threads: true })).toBe("?th=1");
   });
 });
 
