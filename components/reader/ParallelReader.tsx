@@ -6,11 +6,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { InterlinearLine } from "@/components/concordance/InterlinearLine";
 import { LemmaPanel } from "@/components/concordance/LemmaPanel";
 import { WordPopover } from "@/components/concordance/WordPopover";
-import { PinnedPassages } from "@/components/threads/PinnedPassages";
-import { ThreadRail, targetKey } from "@/components/threads/ThreadRail";
+import { ThreadsView } from "@/components/threads/ThreadsView";
 import { loadInterlinear } from "@/lib/concordance/data";
-import { loadThreads } from "@/lib/threads/data";
-import type { ChapterThreads, ThreadRef } from "@/lib/threads/types";
 import type { InterlinearChapter, InterlinearWord } from "@/lib/concordance/types";
 import { readerQuery, type ReaderState, type TranslationId } from "@/lib/reader/state";
 import { IconographStrip } from "@/components/iconograph/IconographStrip";
@@ -81,48 +78,6 @@ export function ParallelReader({ book, chapter, verses, translations, prev, next
     }
     return m;
   }, [ilData]);
-  // Threads: every verse's cross-references along a Genesis→Revelation rail, read in place.
-  const [threads, setThreads] = useState<{ key: string; data: ChapterThreads } | null>(null);
-  const thData = state.threads && threads?.key === ilKey ? threads.data : null;
-  useEffect(() => {
-    if (!state.threads) return;
-    let live = true;
-    loadThreads(book.id, chapter)
-      .then((data) => live && setThreads({ key: ilKey, data }))
-      .catch(console.error);
-    return () => {
-      live = false;
-    };
-  }, [state.threads, book.id, chapter, ilKey]);
-  const threadIndex = useMemo(() => {
-    const byVerse = new Map<number, ThreadRef[]>();
-    const versesByTarget = new Map<number, Set<number>>();
-    let maxVotes = 1;
-    for (const r of thData?.refs ?? []) {
-      if (!byVerse.has(r[0])) byVerse.set(r[0], []);
-      byVerse.get(r[0])!.push(r);
-      const k = targetKey(r[1]);
-      if (!versesByTarget.has(k)) versesByTarget.set(k, new Set());
-      versesByTarget.get(k)!.add(r[0]);
-      maxVotes = Math.max(maxVotes, r[3]);
-    }
-    const shared = new Map([...versesByTarget].map(([k, vs]) => [k, vs.size]));
-    return { byVerse, shared, maxVotes };
-  }, [thData]);
-  const [hoverKey, setHoverKey] = useState<number | null>(null);
-  const [pins, setPins] = useState<{ key: string; byVerse: Map<number, ThreadRef[]> }>({ key: ilKey, byVerse: new Map() });
-  const pinnedByVerse = pins.key === ilKey ? pins.byVerse : new Map<number, ThreadRef[]>();
-  const togglePin = (verse: number, r: ThreadRef) =>
-    setPins((cur) => {
-      const m = new Map(cur.key === ilKey ? cur.byVerse : []);
-      const list = m.get(verse) ?? [];
-      const id = `${r[1]}-${r[2]}`;
-      m.set(verse, list.some((x) => `${x[1]}-${x[2]}` === id) ? list.filter((x) => `${x[1]}-${x[2]}` !== id) : [...list, r]);
-      return { key: ilKey, byVerse: m };
-    });
-  // The rail gets its own column on wide screens unless a side panel is taking the room.
-  const railColumn = state.threads && !side;
-
   const [popover, setPopover] = useState<{ word: InterlinearWord; anchor: HTMLElement } | null>(null);
   const closePopover = useCallback(() => setPopover(null), []);
   const originalLabel = book.testament === "OT" ? "Hebrew" : "Greek";
@@ -172,25 +127,36 @@ export function ParallelReader({ book, chapter, verses, translations, prev, next
 
   const twoUp = active.length > 1;
   const cols = twoUp
-    ? railColumn
-      ? "grid-cols-[2.25rem_minmax(0,1fr)] md:grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,1fr)] xl:grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,1fr)_17rem]"
-      : "grid-cols-[2.25rem_minmax(0,1fr)] md:grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,1fr)]"
-    : railColumn
-      ? "grid-cols-[2.25rem_minmax(0,1fr)] md:grid-cols-[2.5rem_minmax(0,1fr)] xl:grid-cols-[2.5rem_minmax(0,1fr)_20rem]"
-      : "grid-cols-[2.25rem_minmax(0,1fr)] md:grid-cols-[2.5rem_minmax(0,1fr)]";
-  // Rail placement: its own column on xl (when railColumn), otherwise a full-width row under the text.
-  const railCell = railColumn ? "max-xl:col-start-2 max-xl:-col-end-1 xl:pt-1" : "col-start-2 -col-end-1";
+    ? "grid-cols-[2.25rem_minmax(0,1fr)] md:grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,1fr)]"
+    : "grid-cols-[2.25rem_minmax(0,1fr)] md:grid-cols-[2.5rem_minmax(0,1fr)]";
   // On narrow screens two translations collapse to one tabbed column.
   const cellVisibility = (id: TranslationId) => (twoUp && id !== shownOnMobile ? "max-md:hidden" : "");
   const nameOf = (id: TranslationId) => translations.find((t) => t.id === id)?.name ?? id;
 
+  if (state.threads && onStateChange) {
+    return (
+      <ThreadsView
+        book={book}
+        chapter={chapter}
+        verses={verses}
+        translations={translations}
+        prev={prev}
+        next={next}
+        state={state}
+        update={update}
+        selectVerse={selectVerse}
+        chapterHref={chapterHref}
+      />
+    );
+  }
+
   return (
     <div
-      className={`mx-auto w-full px-5 sm:px-8 ${side ? "max-w-[84rem] lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-14" : railColumn ? "max-w-[88rem]" : twoUp ? "max-w-6xl" : "max-w-3xl"}`}
+      className={`mx-auto w-full px-5 sm:px-8 ${side ? "max-w-[84rem] lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-14" : twoUp ? "max-w-6xl" : "max-w-3xl"}`}
     >
       <article
         aria-labelledby="chapter-title"
-        className={`pb-[50dvh] pt-14 lg:pb-24 ${twoUp ? "" : railColumn ? "mx-auto w-full max-w-5xl" : "w-full max-w-3xl justify-self-center"}`}
+        className={`pb-[50dvh] pt-14 lg:pb-24 ${twoUp ? "" : "w-full max-w-3xl justify-self-center"}`}
       >
         <header className="mb-10 flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
           <div>
@@ -233,7 +199,7 @@ export function ParallelReader({ book, chapter, verses, translations, prev, next
               type="button"
               aria-pressed={state.threads}
               disabled={!onStateChange}
-              onClick={() => update({ threads: !state.threads })}
+              onClick={() => update({ threads: true, verse: state.verse ?? 1 })}
               title="Show where every verse connects across Scripture"
               className={`rounded-full border px-3.5 py-1.5 text-xs tracking-[0.08em] transition-colors ${state.threads ? "border-accent/70 text-accent" : "border-rule text-muted hover:border-text/40 hover:text-text"}`}
             >
@@ -287,13 +253,6 @@ export function ParallelReader({ book, chapter, verses, translations, prev, next
                 {id} <span className="tracking-normal text-muted">· {nameOf(id)}</span>
               </span>
             ))}
-            {railColumn && (
-              <span className="hidden justify-between pr-9 text-xs tracking-[0.08em] text-muted xl:flex">
-                <span>Gen</span>
-                <span>Threads</span>
-                <span>Rev</span>
-              </span>
-            )}
           </div>
 
           {verses.map((v) => {
@@ -345,33 +304,6 @@ export function ParallelReader({ book, chapter, verses, translations, prev, next
                     </p>
                   );
                 })}
-                {state.threads && (
-                  <div className={railCell}>
-                    {thData ? (
-                      <ThreadRail
-                        verseLabel={`${book.refName} ${chapter}:${v.verse}`}
-                        refs={threadIndex.byVerse.get(v.verse) ?? []}
-                        maxVotes={threadIndex.maxVotes}
-                        self={thData.self}
-                        bookStarts={thData.bookStarts}
-                        shared={threadIndex.shared}
-                        hoverKey={hoverKey}
-                        onHoverKey={setHoverKey}
-                        pinned={new Set((pinnedByVerse.get(v.verse) ?? []).map((r) => `${r[1]}-${r[2]}`))}
-                        onTogglePin={(r) => togglePin(v.verse, r)}
-                        onOpenList={() => selectVerse(v.verse)}
-                        translation={active[0]}
-                      />
-                    ) : (
-                      <div aria-hidden className="h-[2.6rem] border-b border-rule" />
-                    )}
-                  </div>
-                )}
-                {(pinnedByVerse.get(v.verse)?.length ?? 0) > 0 && (
-                  <div className="col-start-2 -col-end-1">
-                    <PinnedPassages refs={pinnedByVerse.get(v.verse)!} state={state} onUnpin={(r) => togglePin(v.verse, r)} />
-                  </div>
-                )}
                 {ilData && wordsByVerse.has(v.verse) && (
                   <div className="col-start-2 -col-end-1">
                     <InterlinearLine
@@ -415,12 +347,6 @@ export function ParallelReader({ book, chapter, verses, translations, prev, next
         <p className="mt-8 hidden text-center text-xs text-muted md:block">
           <kbd>j</kbd> <kbd>k</kbd> verses · <kbd>←</kbd> <kbd>→</kbd> chapters · <kbd>⌘K</kbd> go to
         </p>
-        {state.threads && (
-          <p className="mt-6 text-center text-[0.7rem] text-muted">
-            Threads: each tick is a cross-reference from OpenBible.info, taller for more votes. Gold ticks reach passages
-            three or more verses of this chapter share; the shaded band is this chapter.
-          </p>
-        )}
         {state.interlinear && (
           <p className="mt-6 text-center text-[0.7rem] text-muted">
             {originalLabel} text, glosses and parsing: STEPBible.org{" "}

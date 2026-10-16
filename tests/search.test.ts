@@ -69,3 +69,18 @@ describe.skipIf(!fs.existsSync(DB))("chapter threads", async () => {
     expect(() => assertAllowedApiPath("/api/threads/43/3")).not.toThrow();
   });
 });
+
+describe.skipIf(!fs.existsSync(DB))("verse references for the threads panel", async () => {
+  const { getVerseReferences, getChapterThreads } = await import("@/lib/queries/threads");
+
+  it("returns every positive-vote reference in canonical order, verse by verse", () => {
+    const refs = getVerseReferences(44001001, "BSB"); // Acts 1:1
+    const fromChapter = getChapterThreads(44, 1).refs.filter(([v]) => v === 1);
+    expect(refs).toHaveLength(fromChapter.length); // panel count = row count
+    expect(refs.map((r) => r.toStart)).toEqual([...refs.map((r) => r.toStart)].sort((a, b) => a - b));
+    expect(refs.some((r) => r.toStart === 42001003)).toBe(true); // Luke 1:3
+    const range = refs.find((r) => r.toEnd > r.toStart)!;
+    expect(range.verses.length).toBeGreaterThan(1);
+    expect(range.verses[0].id).toBe(range.toStart);
+  });
+});

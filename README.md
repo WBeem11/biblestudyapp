@@ -7,7 +7,7 @@ summaries, advice or commentary. All study content comes from verified, local da
 - **Parallel Reader**: BSB and KJV side by side, verse-aligned, with cross-references for every verse.
 - **Iconograph**: all 344,794 OpenBible.info cross-references drawn as arcs across the canon (D3 + Canvas).
 - **Inline Concordance**: Hebrew and Greek word by word (STEPBible), with plain-English parsing and every occurrence.
-- **Threads**: read a whole chapter with every verse's cross-references drawn beside it, hover to read them and click to pin them under the verse, without leaving the chapter.
+- **Threads**: read a whole chapter while a thread from every verse runs to where it lands, Genesis to Revelation; select a verse to read everything it points to, grouped by book, without leaving the chapter.
 - **Search**: full-text search with reference parsing (`⌘K`, then "Rom 8:28" or "loving devotion").
 
 ## Develop

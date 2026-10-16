@@ -23,6 +23,21 @@
   --accent: var(--bronze);
   --accent-graphic: var(--gilt);
 
+  /*
+   * Genre palette for the Threads view (canonical order, adjacent on the canon axis).
+   * Validated with the dataviz validator: light on #f5f1ea — worst adjacent CVD ΔE 11.6,
+   * normal-vision ΔE 20.9, all ≥ 3:1; dark on #1d1b18 — CVD ΔE 11.0, normal 18.1, all ≥ 3:1.
+   * Genre names always accompany the colors (axis labels, legends), so identity is never color-alone.
+   */
+  --genre-law: #c04a72;
+  --genre-history: #2f7fb5;
+  --genre-wisdom: #b27812;
+  --genre-prophets: #7a52b0;
+  --genre-gospels: #159a80;
+  --genre-acts: #d0642c;
+  --genre-epistles: #3560c0;
+  --genre-apocalyptic: #a8427a;
+
   color-scheme: light;
 }
 
@@ -35,6 +50,15 @@
     --text-muted: #9a9284;
     --accent: #c4a66b;
     --accent-graphic: #c4a66b;
+
+    --genre-law: #d2618a;
+    --genre-history: #4b94cc;
+    --genre-wisdom: #b8861f;
+    --genre-prophets: #a07ad6;
+    --genre-gospels: #2aa88e;
+    --genre-acts: #d97440;
+    --genre-epistles: #6b8ee6;
+    --genre-apocalyptic: #cd6aa0;
 
     color-scheme: dark;
   }

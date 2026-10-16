@@ -1,37 +1,43 @@
 import { expect, test } from "@playwright/test";
 
-test("threads: every verse's connections, pinned in place without leaving the chapter", async ({ page }) => {
+test("threads: read the chapter while following each verse's references", async ({ page }) => {
   await page.goto("/read/john/3");
   await page.getByRole("button", { name: "Threads", exact: true }).click();
   await expect(page).toHaveURL(/th=1/);
+  await expect(page).toHaveURL(/v=1/);
 
-  const rail16 = page.getByRole("img", { name: /^John 3:16: \d+ cross-references across Scripture/ }).filter({ visible: true });
-  await expect(rail16).toBeVisible();
-  await expect(rail16).toHaveAccessibleName(/Strongest: .*Romans 5:8/);
+  // The diagram is drawn beside the text.
+  await expect(page.locator("canvas").filter({ visible: true })).toHaveCount(1);
+  await expect(page.getByText("Genesis", { exact: true }).filter({ visible: true })).toBeVisible();
 
-  // Hover the Romans 5:8 tick, then click it to pin the passage under the verse.
-  await rail16.scrollIntoViewIfNeeded();
-  // An SVG <line> has zero width, which Playwright treats as hidden: read its position directly.
-  const tickX = await rail16
-    .locator('g[data-target="45005008-45005008"] line')
-    .evaluate((el) => el.getBoundingClientRect().left);
-  const svg = (await rail16.boundingBox())!;
-  await page.mouse.move(tickX, svg.y + svg.height / 2);
-  await expect(page.getByRole("tooltip").filter({ visible: true })).toContainText(/Romans \d+:\d+/);
-  await page.mouse.click(tickX, svg.y + svg.height / 2);
+  // Select John 3:16: the panel lists where it points, in full, without leaving John 3.
+  await page.getByRole("button", { name: /^Verse 16, \d+ cross-references$/ }).click();
+  const panel = page.getByRole("complementary", { name: "Cross-references for John 3:16" });
+  await expect(panel.getByRole("heading", { name: "John 3:16" })).toBeVisible();
+  await expect(panel.getByRole("link", { name: /^Romans 5:8/ })).toBeVisible();
+  await expect(panel).toContainText("God proves His love for us");
+  await expect(page).toHaveURL(/\/read\/john\/3\?.*v=16/);
 
-  const pinned = page.locator("li.border-gilt").filter({ visible: true });
-  await expect(pinned).toHaveCount(1);
-  await expect(pinned).toContainText(/Romans/);
-  await expect(page).toHaveURL(/\/read\/john\/3\?th=1$/); // still in John 3
+  // The panel's total matches the verse's count in the text column.
+  const rowCount = (await page.getByRole("button", { name: /^Verse 16, / }).getAttribute("aria-label"))!.match(/(\d+) cross/)![1];
+  await expect(panel.getByText(rowCount, { exact: true })).toBeVisible();
 
-  await pinned.getByRole("button", { name: /^Unpin/ }).click();
-  await expect(pinned).toHaveCount(0);
+  // Step through verses from the panel; strongest-first ordering is available.
+  await panel.getByRole("button", { name: "Next verse" }).click();
+  await expect(page.getByRole("complementary", { name: "Cross-references for John 3:17" })).toBeVisible();
+  await page.getByLabel("Order references").selectOption("strongest");
+  await expect(page.getByRole("complementary", { name: /John 3:17/ }).getByText(/\d+ votes/).first()).toBeVisible();
+
+  // Leave threads.
+  await page.getByRole("button", { name: "Threads", exact: true }).click();
+  await expect(page).not.toHaveURL(/th=1/);
 });
 
-test("threads: the count opens the full accessible list @mobile", async ({ page }) => {
-  await page.goto("/read/john/3?th=1");
-  await page.getByRole("button", { name: /^List \d+ cross-references for John 3:16$/ }).filter({ visible: true }).click();
-  await expect(page).toHaveURL(/v=16/);
-  await expect(page.getByRole("complementary", { name: "Cross-references for John 3:16" })).toBeVisible();
+test("threads on a phone: references open as a sheet @mobile", async ({ page }) => {
+  await page.goto("/read/acts/1?th=1&v=8");
+  const panel = page.getByRole("complementary", { name: "Cross-references for Acts 1:8" });
+  await expect(panel.getByRole("heading", { name: "Acts 1:8" })).toBeVisible();
+  await expect(panel.getByRole("img", { name: /Gospels \d+/ })).toBeAttached();
+  await panel.getByRole("button", { name: "Close verse" }).click();
+  await expect(panel).toHaveCount(0);
 });

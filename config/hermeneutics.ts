@@ -81,6 +81,7 @@ const config = {
       /^\/api\/search$/, // verse_fts
       /^\/api\/shared-lemmas$/, // words + lemmas
       /^\/api\/threads\/\d+\/\d+$/, // cross_refs + verses
+      /^\/api\/verse-refs\/\d+$/, // cross_refs + verse_texts
     ],
     externalFetch: false,
   },

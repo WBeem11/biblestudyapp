@@ -386,3 +386,27 @@ To add confessions or curated modules (Desiring God / TGC citations), add the ta
 - **Accessibility:** each rail is `role="img"` with a summary (count and three strongest references), and its count button opens the full cross-reference list for that verse.
 - **Data:** `/api/threads/[book]/[chapter]` returns every positive-vote reference from the chapter in one payload: at most 2,074 per chapter, 96 per verse. Zero- or negative-vote references, which OpenBible voters dispute, are left out of the rails but stay in the per-verse sheet. Allow-listed in `config/hermeneutics.ts`.
 - **Tests:** unit coverage for the query and the `th` parameter. Playwright covers toggle, hover, pin and unpin while staying on the chapter, and the accessible list. axe runs on `/read/john/3?th=1` in light and dark mode at desktop and phone widths. `E2E_PORT` lets the suite run beside a dev server on :3000.
+
+### Threads view, redesigned (2026-10-15)
+
+Replaced the per-verse rails with a three-pane layout, following the reference design.
+
+- **Text column:** the chapter in the primary translation, with each verse's reference count. The selected verse gets a gilt edge.
+- **Thread canvas:** a curve from each visible verse's count to its target on the canon axis, colored by the target's genre.
+  - Canvas 2D, redrawn on scroll from the live row positions, so the threads follow the text.
+  - The selected and hovered verses are drawn strong, with endpoint dots; the others are faint, weighted by votes.
+  - Hovering a book on the axis emphasizes every visible thread into it.
+- **Canon axis:** a vertical Genesis→Revelation bar of books sized by verse count and colored by genre.
+  - Book labels are placed by priority (current book, then longer books) and never collide.
+  - The current chapter is outlined.
+  - Hover shows the book name and how many of this chapter's links reach it.
+- **Verse panel:**
+  - Context line, previous/next verse and close buttons, the verse text, and "Show in Iconograph".
+  - "Connects to": a genre bar with a legend and counts, plus a canonical/strongest order switch.
+  - References grouped by book, each passage in full with superscript verse numbers (`/api/verse-refs/[verse]`, allow-listed). Its count always matches the row count, since both use positive-vote references only.
+- **Small screens:** text only, with the panel as a bottom sheet; the selected verse scrolls above it.
+- **Genre palette** (`--genre-*` in `styles/tokens.css`):
+  - Eight hues in canonical order, alternating warm and cool so neighbors on the axis never blur together.
+  - Validated with the dataviz validator. Light on #f5f1ea: worst adjacent CVD ΔE 11.6, normal-vision 20.9, all ≥ 3:1. Dark on #1d1b18: 11.0 / 18.1, all ≥ 3:1, inside the dark lightness band.
+  - Genre names always accompany the colors (axis labels, legend, group headings).
+- **Tests:** a Playwright flow (toggle, select, panel references, count parity, verse stepping, ordering, exit) and a mobile sheet test; axe on `/read/john/3?th=1&v=16` in light and dark mode at desktop and phone widths.

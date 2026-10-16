@@ -13,3 +13,12 @@ export interface ChapterThreads {
 }
 
 export const TOTAL_VERSES = 31102;
+
+export interface VerseReference {
+  toStart: number;
+  toEnd: number;
+  votes: number;
+  /** The target passage verse by verse (capped), in the requested translation. */
+  verses: { id: number; text: string }[];
+  truncated: boolean;
+}
