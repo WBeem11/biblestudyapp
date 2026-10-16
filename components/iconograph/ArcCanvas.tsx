@@ -167,7 +167,7 @@ export function ArcCanvas({ variant, filters, focusChapter = null, lemmaChapters
       ctx.globalAlpha = 0.62;
       ctx.fillRect(0, 0, size.w, vp.baseline);
       ctx.globalAlpha = 1;
-      drawHighlight(ctx, set, hl, vp, palette.accent, full ? 1.6 : 1.1);
+      drawHighlight(ctx, set, hl, vp, palette, full ? 1.6 : 1.1);
     }
 
     // Ticks for chapters that contain the lemma.

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { scriptProps } from "@/components/concordance/script";
+import { GENRE_NAME, genreVar } from "@/lib/threads/genres";
 import { loadLemma } from "@/lib/concordance/data";
 import type { LemmaDetail } from "@/lib/concordance/types";
 import { GENRES, type ArcFilters, type TestamentFilter } from "@/lib/iconograph/model";
@@ -174,13 +175,13 @@ export function IconographView() {
           </span>
         )}
 
-        <ul className="ml-auto flex items-center gap-5 text-xs text-muted" aria-label="Legend">
-          <li className="flex items-center gap-2">
-            <span aria-hidden className="h-px w-6 bg-text/70" /> Within a Testament
-          </li>
-          <li className="flex items-center gap-2">
-            <span aria-hidden className="h-px w-6 bg-gilt" /> Between Testaments
-          </li>
+        <ul className="ml-auto flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted" aria-label="Legend: arcs are colored by the genre they start from">
+          {GENRES.map((g, i) => (
+            <li key={g} className={`flex items-center gap-1.5 ${i === 4 ? "sm:ml-2" : ""}`}>
+              <span aria-hidden className="h-[3px] w-4 rounded-full" style={{ background: genreVar(g) }} />
+              {GENRE_NAME[g]}
+            </li>
+          ))}
         </ul>
       </div>
 

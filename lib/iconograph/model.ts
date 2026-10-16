@@ -9,6 +9,14 @@ import type { OverviewData, VerseEdges } from "./format";
 
 export const GENRES: Genre[] = ["law", "history", "wisdom", "prophets", "gospels", "acts", "epistles", "apocalyptic"];
 
+/** Genre index (into GENRES) per chapter ordinal (index 0 unused). */
+const CHAPTER_GENRE = (() => {
+  const out = new Uint8Array(TOTAL_CHAPTERS + 1);
+  let c = 1;
+  for (const b of BOOKS) for (let i = 0; i < b.chapters; i++) out[c++] = GENRES.indexOf(b.genre);
+  return out;
+})();
+
 export class CanonAxis {
   readonly verseCounts: Uint16Array;
   /** Verse ordinal of the first verse in each chapter (index = chapter ordinal; 0 unused). */
@@ -77,6 +85,8 @@ export interface ArcSet {
   x2: Float64Array;
   strength: Float32Array;
   kind: Uint8Array;
+  /** Genre index (into GENRES) of the arc's starting (left, earlier) end: its color. */
+  genre: Uint8Array;
   /** Chapter ordinals of each endpoint (for genre filters and highlighting). */
   c1: Uint16Array;
   c2: Uint16Array;
@@ -102,6 +112,7 @@ export function chapterArcs(o: OverviewData): ArcSet {
     x2: new Float64Array(n),
     strength: new Float32Array(n),
     kind: new Uint8Array(n),
+    genre: new Uint8Array(n),
     c1: o.from,
     c2: o.to,
     refCount: o.refCount,
@@ -111,6 +122,7 @@ export function chapterArcs(o: OverviewData): ArcSet {
     s.x2[i] = o.to[i] - 0.5;
     s.strength[i] = o.weight[i];
     s.kind[i] = kindOf(o.from[i], o.to[i]);
+    s.genre[i] = CHAPTER_GENRE[o.from[i]];
   }
   return s;
 }
@@ -126,6 +138,7 @@ export function verseArcs(e: VerseEdges, axis: CanonAxis): ArcSet {
     x2: new Float64Array(n),
     strength: new Float32Array(n),
     kind: new Uint8Array(n),
+    genre: new Uint8Array(n),
     c1: new Uint16Array(n),
     c2: new Uint16Array(n),
     verses,
@@ -142,6 +155,7 @@ export function verseArcs(e: VerseEdges, axis: CanonAxis): ArcSet {
     s.c2[i] = swap ? ca : cb;
     s.strength[i] = e.votes[i];
     s.kind[i] = kindOf(ca, cb);
+    s.genre[i] = CHAPTER_GENRE[swap ? cb : ca];
     verses.set([e.from[i], e.toStart[i], e.toEnd[i]], i * 3);
   }
   return s;

@@ -1,5 +1,5 @@
 /** Canvas drawing and hit-testing for the Iconograph. Pure functions over an ArcSet. */
-import type { ArcSet, CanonAxis } from "./model";
+import { GENRES, type ArcSet, type CanonAxis } from "./model";
 
 export interface Viewport {
   width: number; // CSS px
@@ -21,6 +21,8 @@ export interface Palette {
   surface: string;
   /** Resolved UI font family (canvas can't read CSS variables). */
   font: string;
+  /** Genre colors in GENRES order (validated palette, styles/tokens.css). */
+  genres: string[];
 }
 
 export function readPalette(el: Element): Palette {
@@ -35,6 +37,7 @@ export function readPalette(el: Element): Palette {
     rule: v("--rule"),
     surface: v("--surface"),
     font: getComputedStyle(document.body).fontFamily,
+    genres: GENRES.map((g) => v(`--genre-${g}`)),
   };
 }
 
@@ -84,7 +87,7 @@ export function drawArcs(
     const i = indices[j];
     const g = geometry(s, i, vp);
     if (!g) continue;
-    const color = s.kind[i] === 2 ? pal.bridge : pal.ink;
+    const color = pal.genres[s.genre[i]];
     if (color !== lastColor) {
       ctx.strokeStyle = color;
       lastColor = color;
@@ -101,13 +104,14 @@ export function drawArcs(
 }
 
 /** Highlighted arcs: a uniform accent stroke on top of everything. */
-export function drawHighlight(ctx: CanvasRenderingContext2D, s: ArcSet, indices: ArrayLike<number>, vp: Viewport, color: string, lineWidth = 1.6) {
-  ctx.strokeStyle = color;
+/** Highlighted arcs: each in its genre color at full strength, on top of everything. */
+export function drawHighlight(ctx: CanvasRenderingContext2D, s: ArcSet, indices: ArrayLike<number>, vp: Viewport, pal: Palette, lineWidth = 1.6) {
   ctx.lineWidth = lineWidth;
-  ctx.globalAlpha = indices.length > 200 ? 0.5 : 0.9;
+  ctx.globalAlpha = indices.length > 200 ? 0.6 : 0.95;
   for (let j = 0; j < indices.length; j++) {
     const g = geometry(s, indices[j], vp);
     if (!g) continue;
+    ctx.strokeStyle = pal.genres[s.genre[indices[j]]];
     ctx.beginPath();
     ctx.ellipse(g.cx, vp.baseline, g.r, g.ry, 0, Math.PI, 2 * Math.PI);
     ctx.stroke();
@@ -154,8 +158,9 @@ export function drawAxis(ctx: CanvasRenderingContext2D, axis: CanonAxis, vp: Vie
     const a = vp.x(start);
     const b = vp.x(end);
     if (b < 0 || a > vp.width) continue;
-    ctx.fillStyle = book.id % 2 ? pal.rule : pal.muted;
-    ctx.globalAlpha = book.testament === "NT" ? 0.9 : 0.55;
+    // Books in their genre color; alternate books slightly lighter so boundaries stay visible.
+    ctx.fillStyle = pal.genres[GENRES.indexOf(book.genre)];
+    ctx.globalAlpha = book.id % 2 ? 1 : 0.7;
     ctx.fillRect(a, bandTop, Math.max(0.5, b - a - (b - a > 3 ? 0.75 : 0)), bandH);
     ctx.globalAlpha = 1;
     if (compact) continue;
