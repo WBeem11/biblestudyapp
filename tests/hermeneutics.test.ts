@@ -81,6 +81,20 @@ describe("hermeneutics enforcement", () => {
     expect(offenders).toEqual([]);
   });
 
+  it("confines each external service to its listed modules, and never to study data", () => {
+    const supabase = HERMENEUTICS.externalServices.find((x) => x.name === "Supabase")!;
+    const users = ["app", "components", "lib", "config"]
+      .flatMap(sourceFiles)
+      .filter((f) => /@supabase\/|@\/lib\/supabaseClient/.test(fs.readFileSync(path.join(ROOT, f), "utf8")));
+    expect(users.filter((f) => !(supabase.modules as readonly string[]).includes(f))).toEqual([]);
+    // The only table it touches is `subscribers`, and only by insert.
+    const calls = (supabase.modules as readonly string[])
+      .map((f) => fs.readFileSync(path.join(ROOT, f), "utf8"))
+      .join("\n")
+      .match(/\.from\([^)]*\)\.\w+/g);
+    expect(calls).toEqual(['.from("subscribers").insert']);
+  });
+
   it("lint rules block bypasses", async () => {
     const eslint = new ESLint({ cwd: ROOT });
     const probe = async (code: string, file: string) =>

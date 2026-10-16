@@ -32,6 +32,11 @@ npm run dev
 verifies their checksums, and builds the database. `next.config.ts` bundles `data/bible.db` with the
 server functions. Set `NEXT_PUBLIC_SITE_URL` to the production origin for the sitemap.
 
+The welcome gateway's email sign-up needs `NEXT_PUBLIC_SUPABASE_URL` and
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (see `.env.example`; locally in `.env.local`). They are inlined at
+build time, so redeploy after setting them. Without them the site builds and runs, and the gateway reports
+that sign-up is unavailable.
+
 CI (`.github/workflows/ci.yml`) runs the same build, then lint, unit, end-to-end and accessibility tests.
 
 ## Data and licenses

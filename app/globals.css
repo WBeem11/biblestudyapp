@@ -68,3 +68,15 @@ kbd {
   outline-offset: 2px;
   border-radius: 2px;
 }
+
+/* Gateway → hub transition (shortened to ~0 by the reduced-motion rule above). */
+@keyframes gate-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

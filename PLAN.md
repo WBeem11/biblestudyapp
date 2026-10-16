@@ -410,3 +410,15 @@ Replaced the per-verse rails with a three-pane layout, following the reference d
   - Validated with the dataviz validator. Light on #f5f1ea: worst adjacent CVD ΔE 11.6, normal-vision 20.9, all ≥ 3:1. Dark on #1d1b18: 11.0 / 18.1, all ≥ 3:1, inside the dark lightness band.
   - Genre names always accompany the colors (axis labels, legend, group headings).
 - **Tests:** a Playwright flow (toggle, select, panel references, count parity, verse stepping, ordering, exit) and a mobile sheet test; axe on `/read/john/3?th=1&v=16` in light and dark mode at desktop and phone widths.
+
+### Welcome gateway (2026-10-15)
+
+- **What it is:** `/` shows a gateway asking for an email until the visitor has entered (`localStorage.biblestudy_entered`), then fades into the hub. Deep links (chapters, search, Iconograph) are not gated.
+- **Sign-up flow:**
+  - The email is normalized (trimmed, lowercased) and format-checked, then inserted into Supabase `subscribers` with no `.select()`, so an insert-only RLS policy is enough.
+  - A unique violation (`23505`) means a returning student, who is let in silently like a new one.
+  - Any other failure keeps them on the gateway with a retry message.
+- **Client:** `lib/supabaseClient.ts` is created lazily and returns null when the env vars are unset, so builds never fail on missing configuration. Auth session persistence is off, since there are no logins.
+- **Guardrail:** Supabase is listed in `config/hermeneutics.ts` → `externalServices` (sign-up only, never study content). A test confines it to its three modules and to `.from("subscribers").insert`.
+- **Not adopted from the Supabase quickstart:** `@supabase/ssr`, cookie clients and middleware. They're for refreshing login sessions; cookie reads would make pages dynamic, and Next 16 uses `proxy.ts`.
+- **Tests:** unit tests for validation and the subscribe outcomes. Playwright intercepts the Supabase request (never writing the live table) for validation, new subscriber, returning student, failure, and remembering a visitor after reload.

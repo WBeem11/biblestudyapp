@@ -86,6 +86,18 @@ const config = {
     externalFetch: false,
   },
 
+  /**
+   * Outside services the browser may contact, for non-study purposes only. None of them is ever a
+   * source of study content; tests/hermeneutics.test.ts confines each to its listed modules.
+   */
+  externalServices: [
+    {
+      name: "Supabase",
+      purpose: "Welcome-gateway email sign-up: insert into `subscribers` only, nothing read back",
+      modules: ["lib/supabaseClient.ts", "lib/gateway.ts", "components/gateway/GatewayForm.tsx"],
+    },
+  ],
+
   /** Packages that must never be installed (AI/LLM SDKs and generation frameworks). */
   forbiddenPackages: [
     /^openai$/,
