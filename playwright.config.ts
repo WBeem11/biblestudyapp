@@ -8,11 +8,13 @@ export default defineConfig({
   testDir: "e2e",
   fullyParallel: true,
   retries: CI ? 1 : 0,
-  reporter: CI ? [["list"], ["html", { open: "never" }]] : "list",
+  // "github" turns each failure into a run annotation, readable without signing in to see logs.
+  reporter: CI ? [["list"], ["github"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: `http://localhost:${PORT}`,
     // Locally use the installed Chrome; CI installs Playwright's Chromium.
-    channel: CI ? undefined : "chrome",
+    // PW_CHANNEL=chrome reproduces CI locally without downloading Playwright's Chromium.
+    channel: process.env.PW_CHANNEL ?? (CI ? undefined : "chrome"),
     trace: "retain-on-failure",
   },
   projects: [
