@@ -1,5 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { EB_Garamond, Gentium_Plus, Inter, Noto_Serif_Hebrew } from "next/font/google";
 import "./globals.css";
 
@@ -31,6 +31,12 @@ const greek = Gentium_Plus({
 export const metadata: Metadata = {
   title: "Bible Study",
   description: "Parallel reading, cross-reference iconograph, and original-language concordance.",
+};
+
+// Dark-only: browser UI (address bar, form controls, scrollbars) matches the app.
+export const viewport: Viewport = {
+  themeColor: "#1d1b18",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

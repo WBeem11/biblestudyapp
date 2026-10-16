@@ -109,22 +109,13 @@ export function ArcCanvas({ variant, filters, focusChapter = null, lemmaChapters
   }, [set, indices, focusChapter, lemmaChapters]);
   const highlighting = focusChapter !== null || lemmaChapters !== null;
 
-  // Size + palette (re-read on theme changes).
+  // Size + palette (the app has one theme, so the palette is read once).
   useEffect(() => {
     const el = wrapRef.current!;
     const ro = new ResizeObserver(([e]) => setSize({ w: Math.round(e.contentRect.width), h: Math.round(e.contentRect.height) }));
     ro.observe(el);
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const readTheme = () => setPalette(readPalette(el));
-    readTheme();
-    mq.addEventListener("change", readTheme);
-    const mo = new MutationObserver(readTheme);
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class"] });
-    return () => {
-      ro.disconnect();
-      mq.removeEventListener("change", readTheme);
-      mo.disconnect();
-    };
+    setPalette(readPalette(el));
+    return () => ro.disconnect();
   }, []);
 
   const axisH = full ? 40 : 10;

@@ -102,16 +102,9 @@ export function ThreadCanvas({ height, refsByVerse, maxVotes, anchors, selected,
     schedule();
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onTheme = () => {
-      colors.current = null;
-      schedule();
-    };
-    mq.addEventListener("change", onTheme);
     return () => {
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
-      mq.removeEventListener("change", onTheme);
       cancelAnimationFrame(frame.current);
       frame.current = 0;
     };
